@@ -23,6 +23,23 @@ public class User {
 
     @NotBlank(message = "Email is required")
     private String email;
+    private String password;
+    
+	public List<BorrowRecord> getBorrowRecords() {
+		return borrowRecords;
+	}
+
+	public void setBorrowRecords(List<BorrowRecord> borrowRecords) {
+		this.borrowRecords = borrowRecords;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public Long getId() {
 		return id;
