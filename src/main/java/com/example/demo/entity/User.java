@@ -1,19 +1,27 @@
 package com.example.demo.entity;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class User {
 
+	@JsonManagedReference
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private List<BorrowRecord> borrowRecords;
+	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "Name is required")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "Email is required")
     private String email;
 
 	public Long getId() {

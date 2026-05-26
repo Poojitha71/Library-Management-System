@@ -1,8 +1,8 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 public class BorrowRecord {
@@ -11,15 +11,19 @@ public class BorrowRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonBackReference
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "book_id")
     private Book book;
 
     private LocalDate borrowDate;
     private LocalDate returnDate;
     private boolean returned;
+    private LocalDate dueDate;
 	public Long getId() {
 		return id;
 	}
@@ -56,11 +60,16 @@ public class BorrowRecord {
 	public void setReturned(boolean returned) {
 		this.returned = returned;
 	}
+	public LocalDate getDueDate() {
+		return dueDate;
+	}
+	public void setDueDate(LocalDate dueDate) {
+		this.dueDate = dueDate;
+	}
 	@Override
 	public String toString() {
 		return "BorrowRecord [id=" + id + ", user=" + user + ", book=" + book + ", borrowDate=" + borrowDate
-				+ ", returnDate=" + returnDate + ", returned=" + returned + "]";
+				+ ", returnDate=" + returnDate + ", returned=" + returned + ", dueDate=" + dueDate + "]";
 	}
 
-    
 }
