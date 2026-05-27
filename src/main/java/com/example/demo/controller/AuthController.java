@@ -1,14 +1,28 @@
 package com.example.demo.controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.RegisterRequestDTO;
+import com.example.demo.dto.RegisterResponseDTO;
+import com.example.demo.entity.User;
 import com.example.demo.service.AuthService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.RegisterRequestDTO;
+import com.example.demo.entity.User;
+import com.example.demo.service.AuthService;
+
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,5 +43,10 @@ public class AuthController {
         response.setToken(token);
 
         return response;
+    }
+    
+    @PostMapping("/register")
+    public RegisterResponseDTO register(@RequestBody RegisterRequestDTO dto) {
+        return service.register(dto);
     }
 }

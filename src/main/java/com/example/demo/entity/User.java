@@ -24,7 +24,16 @@ public class User {
     @NotBlank(message = "Email is required")
     private String email;
     private String password;
+    private String role;
     
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	public List<BorrowRecord> getBorrowRecords() {
 		return borrowRecords;
 	}
@@ -67,7 +76,8 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", email=" + email + "]";
+		return "User [borrowRecords=" + borrowRecords + ", id=" + id + ", name=" + name + ", email=" + email
+				+ ", password=" + password + ", role=" + role + "]";
 	}
 
     

@@ -1,6 +1,8 @@
 package com.example.demo.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,27 +14,36 @@ import com.example.demo.security.JwtFilter;
 @Configuration
 public class SecurityConfig {
 
-    // ✅ ADD HERE (class level)
     private final JwtFilter jwtFilter;
 
-    // ✅ ADD THIS CONSTRUCTOR
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
-    // ✅ EXISTING METHOD
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf().disable()
+        http
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
                 .permitAll()
+
+                .requestMatchers("/books/add", "/books/delete/**")
+                .hasAuthority("ADMIN")
+
+                .requestMatchers("/borrow/**")
+                .hasAuthority("USER")
+
                 .anyRequest().authenticated()
             )
-            // ✅ USE jwtFilter HERE
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+    
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }
