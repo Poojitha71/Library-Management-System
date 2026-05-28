@@ -23,6 +23,10 @@ public class BookController {
 		this.bookService = bookService;
 	}
 	
+	@GetMapping("/test")
+    public String test() {
+        return "Protected API Working";
+    }
 	@PostMapping("/add/book")
 	public BookResponseDTO addBook(@Valid @RequestBody BookRequestDTO dto) {
 	    return bookService.addBook(dto);
