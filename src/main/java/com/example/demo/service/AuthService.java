@@ -53,4 +53,12 @@ public class AuthService {
         response.setRole(savedUser.getRole());
 
         return response;
-    }}
+    }
+    public String getRoleByEmail(String email) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getRole();
+    }
+}

@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.AdminBorrowDTO;
 import com.example.demo.dto.BorrowResponseDTO;
 import com.example.demo.entity.*;
 import com.example.demo.repository.*;
@@ -7,7 +8,6 @@ import com.example.demo.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -26,9 +26,12 @@ public class BorrowService {
         this.borrowRepo = borrowRepo;
     }
 
-    public BorrowRecord borrowBook(Long userId, Long bookId) {
+    // =========================
+    // BORROW BOOK (SECURE)
+    // =========================
+    public BorrowRecord borrowBook(String email, Long bookId) {
 
-        User user = userRepo.findById(userId)
+        User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Book book = bookRepo.findById(bookId)
@@ -39,6 +42,7 @@ public class BorrowService {
         }
 
         book.setAvailable(false);
+        bookRepo.save(book);
 
         BorrowRecord record = new BorrowRecord();
         record.setUser(user);
@@ -49,11 +53,55 @@ public class BorrowService {
 
         return borrowRepo.save(record);
     }
-    
+
+    // =========================
+    // RETURN BOOK
+    // =========================
+    public BorrowRecord returnBook(String email, Long recordId) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        BorrowRecord record = borrowRepo.findById(recordId)
+                .orElseThrow(() -> new ResourceNotFoundException("Record not found"));
+
+        // Optional safety check (important)
+        if (!record.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not allowed to return this book");
+        }
+
+        record.setReturned(true);
+        record.setReturnDate(LocalDate.now());
+
+        Book book = record.getBook();
+        book.setAvailable(true);
+        bookRepo.save(book);
+
+        return borrowRepo.save(record);
+    }
+
+    // =========================
+    // BORROW HISTORY (SECURE)
+    // =========================
+    public List<BorrowResponseDTO> getUserBorrowHistory(String email) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        List<BorrowRecord> records = borrowRepo.findByUser(user);
+
+        return records.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
+    // =========================
+    // FINE CALCULATION
+    // =========================
     public long calculateFine(BorrowRecord record) {
 
         if (!record.isReturned()) {
-            return 0; // not returned yet
+            return 0;
         }
 
         if (record.getReturnDate().isAfter(record.getDueDate())) {
@@ -61,49 +109,58 @@ public class BorrowService {
                     record.getDueDate(),
                     record.getReturnDate()
             );
-            return daysLate * 10; // ₹10 per day
+            return daysLate * 10;
         }
 
         return 0;
     }
 
-    public BorrowRecord returnBook(Long recordId) {
-
-        BorrowRecord record = borrowRepo.findById(recordId)
-                .orElseThrow(() -> new ResourceNotFoundException("Record not found"));
-
-        record.setReturned(true);
-        record.setReturnDate(LocalDate.now());
-
-        Book book = record.getBook();
-        book.setAvailable(true);
-
-        return borrowRepo.save(record);
-    }
-    
-     public List<BorrowResponseDTO> getUserBorrowHistory(Long userId) {
-
-        if (!userRepo.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found with id: " + userId);
-        }
-
-        List<BorrowRecord> records = borrowRepo.findByUserId(userId);
-
-        return records.stream().map(this::mapToDTO).toList();
-    }
-    
     private BorrowResponseDTO mapToDTO(BorrowRecord record) {
 
         BorrowResponseDTO dto = new BorrowResponseDTO();
 
+        dto.setRecordId(record.getId());
+
+        dto.setBookId(record.getBook().getId());
+
         dto.setBookTitle(record.getBook().getTitle());
+
         dto.setAuthor(record.getBook().getAuthor());
+
         dto.setBorrowDate(record.getBorrowDate());
+
         dto.setReturnDate(record.getReturnDate());
+
         dto.setReturned(record.isReturned());
+
         dto.setFine(calculateFine(record));
 
         return dto;
     }
+    
+    public List<AdminBorrowDTO> getAllBorrowRecords() {
 
+        return borrowRepo.findAll()
+                .stream()
+                .map(record -> {
+
+                    AdminBorrowDTO dto = new AdminBorrowDTO();
+
+                    dto.setUserName(record.getUser().getName());
+                    dto.setEmail(record.getUser().getEmail());
+
+                    dto.setBookTitle(record.getBook().getTitle());
+                    dto.setAuthor(record.getBook().getAuthor());
+
+                    dto.setBorrowDate(record.getBorrowDate());
+                    dto.setReturnDate(record.getReturnDate());
+
+                    dto.setReturned(record.isReturned());
+
+                    dto.setFine(calculateFine(record));
+
+                    return dto;
+                })
+                .toList();
+    }
 }

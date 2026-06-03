@@ -37,10 +37,21 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) {
 
-        String token = service.login(request.getEmail(), request.getPassword());
+        String token =
+                service.login(
+                        request.getEmail(),
+                        request.getPassword()
+                );
+
+        String role =
+                service.getRoleByEmail(
+                        request.getEmail()
+                );
 
         AuthResponse response = new AuthResponse();
+
         response.setToken(token);
+        response.setRole(role);
 
         return response;
     }

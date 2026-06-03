@@ -38,9 +38,9 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
                 .permitAll()
 
-                .requestMatchers("/books/add", "/books/delete/**")
+                .requestMatchers("/books/add/**", "/books/delete/**","/borrow/all")
                 .hasAuthority("ADMIN")
-
+                
                 .requestMatchers("/borrow/**")
                 .hasAuthority("USER")
 

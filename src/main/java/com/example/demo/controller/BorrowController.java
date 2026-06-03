@@ -2,11 +2,13 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.BorrowRecord;
 import com.example.demo.service.BorrowService;
+import com.example.demo.dto.AdminBorrowDTO;
+import com.example.demo.dto.BorrowResponseDTO;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.*;
-import com.example.demo.dto.BorrowResponseDTO;
 
 @RestController
 @RequestMapping("/borrow")
@@ -18,19 +20,40 @@ public class BorrowController {
         this.service = service;
     }
 
-    @PostMapping
-    public BorrowRecord borrowBook(@RequestParam Long userId,
-                                  @RequestParam Long bookId) {
-        return service.borrowBook(userId, bookId);
+    // =========================
+    // BORROW BOOK (LOGIN USER)
+    // =========================
+    @PostMapping("/{bookId}")
+    public BorrowRecord borrowBook(
+            @PathVariable Long bookId,
+            Principal principal
+    ) {
+        return service.borrowBook(principal.getName(), bookId);
     }
 
-    @PostMapping("/return")
-    public BorrowRecord returnBook(@RequestParam Long recordId) {
-        return service.returnBook(recordId);
+    // =========================
+    // RETURN BOOK
+    // =========================
+    @PostMapping("/return/{recordId}")
+    public BorrowRecord returnBook(
+            @PathVariable Long recordId,
+            Principal principal
+    ) {
+        return service.returnBook(principal.getName(), recordId);
+    }
+
+    // =========================
+    // GET BORROWED BOOKS (USER)
+    // =========================
+    @GetMapping("/borrowed-books")
+    public List<BorrowResponseDTO> getBorrowedBooks(
+            Principal principal
+    ) {
+        return service.getUserBorrowHistory(principal.getName());
     }
     
-    @GetMapping("/{id}/borrowed-books")
-    public List<BorrowResponseDTO> getBorrowedBooks(@PathVariable Long id) {
-        return service.getUserBorrowHistory(id);
+    @GetMapping("/all")
+    public List<AdminBorrowDTO> getAllBorrowRecords() {
+        return service.getAllBorrowRecords();
     }
 }
