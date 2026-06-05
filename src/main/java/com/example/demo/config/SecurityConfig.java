@@ -41,6 +41,9 @@ public class SecurityConfig {
                 .requestMatchers("/books/add/**", "/books/delete/**","/borrow/all")
                 .hasAuthority("ADMIN")
                 
+                .requestMatchers("/dashboard/**")
+                .hasAnyAuthority("ADMIN","USER")
+                
                 .requestMatchers("/borrow/**")
                 .hasAuthority("USER")
 
